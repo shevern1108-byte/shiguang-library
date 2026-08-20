@@ -66,59 +66,6 @@ document.head.insertAdjacentHTML('beforeend','<style>.prompt-edit-panel{margin:2
 const productAngleReferences=[['model-angle-01.png','包装盒 · 正面偏右约30° · 轻微俯拍'],['model-angle-02.png','包装盒 · 正面偏左约30° · 轻微俯拍'],['model-angle-03.png','包装盒 · 正面近正视 · 轻微俯拍'],['model-angle-04.png','包装盒 · 顶部高位俯拍 · 正面与底部可见'],['model-angle-05.png','包装盒 · 横放高位俯拍 · 正面右侧与底部可见']];const timeProductGallery=document.querySelector('#timeProductGallery');productAngleReferences.forEach(([file,label])=>timeProductGallery.insertAdjacentHTML('beforeend','<div class="product-image"><img src="public/products/%E6%97%B6%E5%85%89%E7%89%87/'+file+'" alt="'+label+'"><span>'+label+'</span></div>'));const beforeAngleCheckPrompt=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=beforeAngleCheckPrompt(x,variantIndex);const angleRule='产品在画面中的角度应极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不受参考图的拍摄角度影响。若场景构图与已有产品角度冲突，优先保证产品还原并使用已有的安全视角。';if(!text.includes('产品在画面中的角度应极致还原'))text=text.replace(/图片比例/,angleRule+'图片比例');return text};
 const beforeExactAngleRule=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=beforeExactAngleRule(x,variantIndex);const exactAngleRule='产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响。';if(!text.includes(exactAngleRule))text=text.replace(/图片比例/,exactAngleRule+'图片比例');return text};
 const additionalProductAngles=[['model-angle-06.png','包装盒 · 直立正面 · 接近平视'],['model-angle-07.png','包装盒 · 直立正面偏右约45° · 右侧面可见'],['model-angle-08.png','包装盒 · 横放低角度 · 左侧面与底部条码面可见'],['model-angle-09.png','包装盒 · 横放高位俯拍 · 正面左侧与底部可见'],['model-angle-10.png','包装盒 · 横放近垂直俯拍 · 正面为主'],['model-angle-11.png','包装盒 · 横放高位俯拍 · 正面左侧与底部条码面可见'],['model-angle-12.png','包装盒 · 横放垂直俯拍 · 完整正面可见']];additionalProductAngles.forEach(([file,label])=>timeProductGallery.insertAdjacentHTML('beforeend','<div class="product-image"><img src="public/products/%E6%97%B6%E5%85%89%E7%89%87/'+file+'" alt="'+label+'"><span>'+label+'</span></div>'));
-const productComboSelect=document.querySelector('#promptCombo');[...productComboSelect.options].forEach(option=>{if(option.text.includes('药片'))option.remove()});const originalVariantSpecNoBed=variantSpec;variantSpec=function(x,variantIndex){const v=originalVariantSpecNoBed(x,variantIndex);if(v.sceneType==='床品'||/床头柜|床边/.test(x.title)){const surfaces=['浅色木质床头柜桌面','白色哑光床边柜桌面','暖灰色床头小桌台面','原木床边桌桌面','米白色床头柜台面'];const propSets=[['玻璃水杯','合上的书','眼镜'],['手机充电线','小型闹钟','纸巾盒'],['护手霜','发圈','陶瓷杯垫'],['阅读灯底座','便签本','耳机盒'],['小托盘','梳子','首饰盒']];return {...v,sceneType:'床头柜',furniture:surfaces[variantIndex%surfaces.length],props:propSets[variantIndex%propSets.length]}}return v};const originalResolvedComboNoLooseTablet=resolvedCombo;resolvedCombo=function(x){const combo=originalResolvedComboNoLooseTablet(x);if(combo.includes('药片'))return combo.replace(/＋药片/g,'').replace(/药片＋/g,'');return combo};const originalPromptNoBedOrLooseTablet=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=originalPromptNoBedOrLooseTablet(x,variantIndex);text=text.replace(/柔软床品表面|棉质床单上|针织床品上|亚麻床品表面|丝绒床品上/g,'床头柜桌面').replace(/床品四件套|床单褶皱|被子一角|床垫边缘|枕头|被子|床单|床尾巾|柔软绒面/g,'床边背景织物').replace(/。,+/g,'。').replace(/,+/g,',');const oldAngle='产品在画面中的角度应极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不受参考图的拍摄角度影响。若场景构图与已有产品角度冲突，优先保证产品还原并使用已有的安全视角。';text=text.replace(oldAngle,'');const rules='产品必须放置在床头柜、床边桌、书桌或其他真实硬质台面上，严禁将包装盒、药板或药片放在床、床单、被子、枕头或其他床品表面；床品只能作为远处背景。画面中严禁出现脱离药板的裸露药片、散装药粒或单独药粒；产品组合为包装盒＋药板时只能出现包装盒和完整药板，不得额外添加药片。产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响。';if(!text.includes('严禁将包装盒、药板或药片放在床'))text=text.replace(/图片比例/,rules+'图片比例');return text.replace(/。{2,}/g,'。').replace(/，{2,}/g,'，')};const modelNote=document.querySelector('.model-note');if(modelNote)modelNote.textContent='产品：时光片 · 已自动加载18张产品建模参考图（6张标准母版＋12张实拍白底角度图）';
-const promptBeforeFinalCleanup=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=promptBeforeFinalCleanup(x,variantIndex).replace(/拜耳时光片产品产品/g,'拜耳时光片产品');const phrase='产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响。';const first=text.indexOf(phrase);if(first>=0){const head=text.slice(0,first+phrase.length),tail=text.slice(first+phrase.length).split(phrase).join('');text=head+tail}return text};
-const promptBeforePlacementCheck=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=promptBeforePlacementCheck(x,variantIndex);if(text.includes('产品组合为包装盒＋药板')){const placementRule='包装盒与药板必须分别独立、平稳地完整放置在同一硬质桌面上；药板整个底面和四角均获得桌面支撑并形成独立、连续、符合现实的接触阴影，不悬空、不翘起、不倾斜架在包装盒上。包装盒不得压住、遮挡或垫住药板，二者不得重叠、穿插、边缘贴合或互相支撑。包装盒与药板之间必须保留自然可见的合理间距，呈真实使用后随手散放的状态，避免紧贴、对称或商业式组合陈列。';if(!text.includes('包装盒与药板必须分别独立'))text=text.replace(/图片比例/,placementRule+'图片比例')}return text};
-const promptBeforeAngleAndToneLock=makeImagePrompt;
-const primaryAngleByVariant=[
-  ['model-angle-06.png','直立正面、接近平视'],
-  ['model-angle-03.png','正面近正视、轻微俯拍'],
-  ['model-angle-07.png','直立正面偏右约45°、右侧面可见'],
-  ['model-angle-10.png','横放近垂直俯拍、正面为主'],
-  ['model-angle-07.png','直立正面偏右约45°、右侧面可见'],
-  ['model-angle-01.png','正面偏右约30°、轻微俯拍'],
-  ['model-angle-06.png','直立正面、接近平视'],
-  ['model-angle-03.png','正面近正视、轻微俯拍']
-];
-makeImagePrompt=function(x,variantIndex){
-  let text=promptBeforeAngleAndToneLock(x,variantIndex);
-  text=text.replace(/暖白3500K主色/g,'中性日光白平衡5000K')
-    .replace(/暖白3200K/g,'中性日光白平衡5000K')
-    .replace(/中性白4000K/g,'中性日光白平衡5000K')
-    .replace(/低饱和暖棕色调/g,'中性真实色调，白色保持中性白')
-    .replace(/低饱和暖灰色调/g,'低饱和中性灰色调')
-    .replace(/暖棕色调/g,'中性自然色调');
-  const angle=primaryAngleByVariant[variantIndex%primaryAngleByVariant.length];
-  const lock='本方案包装盒必须以白底实拍角度图“'+angle[0]+'（'+angle[1]+'）”作为唯一主产品角度依据，直接保持该图中的真实盒型、宽高厚比例、透视和可见包装面；其他六视图只用于核对包装内容，场景参考图只用于环境，不得据此重新推算、重建、拉宽、压扁或改变药盒。若场景机位与该产品角度冲突，调整场景机位适配产品图，绝不虚构新的产品角度。色彩使用中性日光白平衡，白色包装保持中性白，紫色保持真实紫色，禁止整体黄偏、橙偏、复古报纸黄或暖黄滤镜。';
-  if(!text.includes('作为唯一主产品角度依据'))text=text.replace(/图片比例/,lock+'图片比例');
-  return text;
-};
-const productAngleCatalog={
-  eye:[['model-angle-06.png','直立正面、接近平视'],['model-angle-07.png','直立正面偏右约45°、右侧面可见']],
-  slightTop:[['model-angle-01.png','正面偏右约30°、轻微俯拍'],['model-angle-02.png','正面偏左约30°、轻微俯拍'],['model-angle-03.png','正面近正视、轻微俯拍']],
-  highTop:[['model-angle-04.png','顶部高位俯拍、正面与底部可见'],['model-angle-09.png','横放高位俯拍、正面左侧与底部可见'],['model-angle-10.png','横放近垂直俯拍、正面为主'],['model-angle-11.png','横放高位俯拍、正面左侧与底部条码面可见'],['model-angle-12.png','横放垂直俯拍、完整正面可见']],
-  low:[['model-angle-06.png','直立正面、接近平视'],['model-angle-07.png','直立正面偏右约45°、右侧面可见'],['model-angle-08.png','横放低角度、左侧面与底部条码面可见']],
-  oblique:[['model-angle-01.png','正面偏右约30°、轻微俯拍'],['model-angle-02.png','正面偏左约30°、轻微俯拍'],['model-angle-07.png','直立正面偏右约45°、右侧面可见']]
-};
-function chooseProductAngle(x,variantIndex){
-  const plan=variantPlans[variantIndex%variantPlans.length]||'',v=variantSpec(x,variantIndex);
-  let group='slightTop',reason='常规居家桌面采用轻微俯拍安全视角';
-  if(/高位俯拍/.test(plan)){group='highTop';reason='方案要求高位俯拍'}
-  else if(/低机位/.test(plan)){group='low';reason='方案要求低机位近景'}
-  else if(/平视/.test(plan)){group='eye';reason='方案要求平视机位'}
-  else if(/侧面|斜角/.test(plan)){group='oblique';reason='方案要求侧面或斜角构图'}
-  else if(/轻微俯拍/.test(plan)){group='slightTop';reason='方案要求轻微俯拍'}
-  if(x.format==='细节展示'&&group==='eye'){group='slightTop';reason='细节展示优先使用可看清包装正面的轻俯拍'}
-  const candidates=productAngleCatalog[group],seed=textHash(x.id+'|'+v.position+'|'+variantIndex),selected=candidates[seed%candidates.length];
-  return {file:selected[0],label:selected[1],reason};
-}
-const promptBeforeSmartAngleMatch=makeImagePrompt;
-makeImagePrompt=function(x,variantIndex){
-  let text=promptBeforeSmartAngleMatch(x,variantIndex),angle=chooseProductAngle(x,variantIndex);
-  const smart='根据本方案机位自动匹配结果（'+angle.reason+'），包装盒唯一主产品角度图为“'+angle.file+'（'+angle.label+'）”。必须直接保持该实拍图中的真实盒型、宽高厚比例、透视及可见包装面；其他六视图只用于核对包装内容，场景参考图只用于环境，不得据此重新推算、重建、拉宽、压扁或改变药盒。若场景构图与该产品角度冲突，调整场景机位适配产品图，绝不虚构新的产品角度。';
-  text=text.replace(/本方案包装盒必须以白底实拍角度图“[^”]+”作为唯一主产品角度依据，直接保持该图中的真实盒型、宽高厚比例、透视和可见包装面；其他六视图只用于核对包装内容，场景参考图只用于环境，不得据此重新推算、重建、拉宽、压扁或改变药盒。若场景机位与该产品角度冲突，调整场景机位适配产品图，绝不虚构新的产品角度。/,smart);
-  return text;
-};
 </script></body></html>
 
 
