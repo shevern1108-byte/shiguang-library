@@ -209,6 +209,8 @@ function switchPromptLibrary(mode){promptLibraryMode=mode;const propMode=mode===
 promptPropFilters.querySelectorAll('[data-prompt-prop-category]').forEach(button=>button.addEventListener('click',()=>switchPromptLibrary('props')));
 promptFilters.querySelectorAll('[data-prompt-axis] button').forEach(button=>button.addEventListener('click',()=>switchPromptLibrary('scene')));
 switchPromptLibrary('scene');
+const clearPromptButton=document.createElement('button');clearPromptButton.type='button';clearPromptButton.id='clearPromptWorkspace';clearPromptButton.textContent='一键清空';clearPromptButton.style.marginLeft='auto';document.querySelector('.prompt-head').insertBefore(clearPromptButton,document.querySelector('#buildPrompts'));
+clearPromptButton.onclick=()=>{promptSelected.clear();selectedPropIds.clear();promptResultsEl.innerHTML='';document.querySelector('#selectedPromptCount')&&(document.querySelector('#selectedPromptCount').textContent='0');document.querySelector('#selectedPromptPropCount').textContent='0';renderPromptPicker();renderPromptPropPicker();switchPromptLibrary('scene')};
 </script></body></html>
 
 
