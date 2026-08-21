@@ -66,6 +66,149 @@ document.head.insertAdjacentHTML('beforeend','<style>.prompt-edit-panel{margin:2
 const productAngleReferences=[['model-angle-01.png','包装盒 · 正面偏右约30° · 轻微俯拍'],['model-angle-02.png','包装盒 · 正面偏左约30° · 轻微俯拍'],['model-angle-03.png','包装盒 · 正面近正视 · 轻微俯拍'],['model-angle-04.png','包装盒 · 顶部高位俯拍 · 正面与底部可见'],['model-angle-05.png','包装盒 · 横放高位俯拍 · 正面右侧与底部可见']];const timeProductGallery=document.querySelector('#timeProductGallery');productAngleReferences.forEach(([file,label])=>timeProductGallery.insertAdjacentHTML('beforeend','<div class="product-image"><img src="public/products/%E6%97%B6%E5%85%89%E7%89%87/'+file+'" alt="'+label+'"><span>'+label+'</span></div>'));const beforeAngleCheckPrompt=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=beforeAngleCheckPrompt(x,variantIndex);const angleRule='产品在画面中的角度应极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不受参考图的拍摄角度影响。若场景构图与已有产品角度冲突，优先保证产品还原并使用已有的安全视角。';if(!text.includes('产品在画面中的角度应极致还原'))text=text.replace(/图片比例/,angleRule+'图片比例');return text};
 const beforeExactAngleRule=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=beforeExactAngleRule(x,variantIndex);const exactAngleRule='产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响。';if(!text.includes(exactAngleRule))text=text.replace(/图片比例/,exactAngleRule+'图片比例');return text};
 const additionalProductAngles=[['model-angle-06.png','包装盒 · 直立正面 · 接近平视'],['model-angle-07.png','包装盒 · 直立正面偏右约45° · 右侧面可见'],['model-angle-08.png','包装盒 · 横放低角度 · 左侧面与底部条码面可见'],['model-angle-09.png','包装盒 · 横放高位俯拍 · 正面左侧与底部可见'],['model-angle-10.png','包装盒 · 横放近垂直俯拍 · 正面为主'],['model-angle-11.png','包装盒 · 横放高位俯拍 · 正面左侧与底部条码面可见'],['model-angle-12.png','包装盒 · 横放垂直俯拍 · 完整正面可见']];additionalProductAngles.forEach(([file,label])=>timeProductGallery.insertAdjacentHTML('beforeend','<div class="product-image"><img src="public/products/%E6%97%B6%E5%85%89%E7%89%87/'+file+'" alt="'+label+'"><span>'+label+'</span></div>'));
+const productComboSelect=document.querySelector('#promptCombo');[...productComboSelect.options].forEach(option=>{if(option.text.includes('药片'))option.remove()});const originalVariantSpecNoBed=variantSpec;variantSpec=function(x,variantIndex){const v=originalVariantSpecNoBed(x,variantIndex);if(v.sceneType==='床品'||/床头柜|床边/.test(x.title)){const surfaces=['浅色木质床头柜桌面','白色哑光床边柜桌面','暖灰色床头小桌台面','原木床边桌桌面','米白色床头柜台面'];const propSets=[['玻璃水杯','合上的书','眼镜'],['手机充电线','小型闹钟','纸巾盒'],['护手霜','发圈','陶瓷杯垫'],['阅读灯底座','便签本','耳机盒'],['小托盘','梳子','首饰盒']];return {...v,sceneType:'床头柜',furniture:surfaces[variantIndex%surfaces.length],props:propSets[variantIndex%propSets.length]}}return v};const originalResolvedComboNoLooseTablet=resolvedCombo;resolvedCombo=function(x){const combo=originalResolvedComboNoLooseTablet(x);if(combo.includes('药片'))return combo.replace(/＋药片/g,'').replace(/药片＋/g,'');return combo};const originalPromptNoBedOrLooseTablet=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=originalPromptNoBedOrLooseTablet(x,variantIndex);text=text.replace(/柔软床品表面|棉质床单上|针织床品上|亚麻床品表面|丝绒床品上/g,'床头柜桌面').replace(/床品四件套|床单褶皱|被子一角|床垫边缘|枕头|被子|床单|床尾巾|柔软绒面/g,'床边背景织物').replace(/。,+/g,'。').replace(/,+/g,',');const oldAngle='产品在画面中的角度应极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不受参考图的拍摄角度影响。若场景构图与已有产品角度冲突，优先保证产品还原并使用已有的安全视角。';text=text.replace(oldAngle,'');const rules='产品必须放置在床头柜、床边桌、书桌或其他真实硬质台面上，严禁将包装盒、药板或药片放在床、床单、被子、枕头或其他床品表面；床品只能作为远处背景。画面中严禁出现脱离药板的裸露药片、散装药粒或单独药粒；产品组合为包装盒＋药板时只能出现包装盒和完整药板，不得额外添加药片。产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响。';if(!text.includes('严禁将包装盒、药板或药片放在床'))text=text.replace(/图片比例/,rules+'图片比例');return text.replace(/。{2,}/g,'。').replace(/，{2,}/g,'，')};const modelNote=document.querySelector('.model-note');if(modelNote)modelNote.textContent='产品：时光片 · 已自动加载18张产品建模参考图（6张标准母版＋12张实拍白底角度图）';
+const promptBeforeFinalCleanup=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=promptBeforeFinalCleanup(x,variantIndex).replace(/拜耳时光片产品产品/g,'拜耳时光片产品');const phrase='产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响。';const first=text.indexOf(phrase);if(first>=0){const head=text.slice(0,first+phrase.length),tail=text.slice(first+phrase.length).split(phrase).join('');text=head+tail}return text};
+const promptBeforePlacementCheck=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=promptBeforePlacementCheck(x,variantIndex);if(text.includes('产品组合为包装盒＋药板')){const placementRule='包装盒与药板必须分别独立、平稳地完整放置在同一硬质桌面上；药板整个底面和四角均获得桌面支撑并形成独立、连续、符合现实的接触阴影，不悬空、不翘起、不倾斜架在包装盒上。包装盒不得压住、遮挡或垫住药板，二者不得重叠、穿插、边缘贴合或互相支撑。包装盒与药板之间必须保留自然可见的合理间距，呈真实使用后随手散放的状态，避免紧贴、对称或商业式组合陈列。';if(!text.includes('包装盒与药板必须分别独立'))text=text.replace(/图片比例/,placementRule+'图片比例')}return text};
+const promptBeforeAngleAndToneLock=makeImagePrompt;
+const primaryAngleByVariant=[
+  ['model-angle-06.png','直立正面、接近平视'],
+  ['model-angle-03.png','正面近正视、轻微俯拍'],
+  ['model-angle-07.png','直立正面偏右约45°、右侧面可见'],
+  ['model-angle-10.png','横放近垂直俯拍、正面为主'],
+  ['model-angle-07.png','直立正面偏右约45°、右侧面可见'],
+  ['model-angle-01.png','正面偏右约30°、轻微俯拍'],
+  ['model-angle-06.png','直立正面、接近平视'],
+  ['model-angle-03.png','正面近正视、轻微俯拍']
+];
+makeImagePrompt=function(x,variantIndex){
+  let text=promptBeforeAngleAndToneLock(x,variantIndex);
+  text=text.replace(/暖白3500K主色/g,'中性日光白平衡5000K')
+    .replace(/暖白3200K/g,'中性日光白平衡5000K')
+    .replace(/中性白4000K/g,'中性日光白平衡5000K')
+    .replace(/低饱和暖棕色调/g,'中性真实色调，白色保持中性白')
+    .replace(/低饱和暖灰色调/g,'低饱和中性灰色调')
+    .replace(/暖棕色调/g,'中性自然色调');
+  const angle=primaryAngleByVariant[variantIndex%primaryAngleByVariant.length];
+  const lock='本方案包装盒必须以白底实拍角度图“'+angle[0]+'（'+angle[1]+'）”作为唯一主产品角度依据，直接保持该图中的真实盒型、宽高厚比例、透视和可见包装面；其他六视图只用于核对包装内容，场景参考图只用于环境，不得据此重新推算、重建、拉宽、压扁或改变药盒。若场景机位与该产品角度冲突，调整场景机位适配产品图，绝不虚构新的产品角度。色彩使用中性日光白平衡，白色包装保持中性白，紫色保持真实紫色，禁止整体黄偏、橙偏、复古报纸黄或暖黄滤镜。';
+  if(!text.includes('作为唯一主产品角度依据'))text=text.replace(/图片比例/,lock+'图片比例');
+  return text;
+};
+const productAngleCatalog={
+  eye:[['model-angle-06.png','直立正面、接近平视'],['model-angle-07.png','直立正面偏右约45°、右侧面可见']],
+  slightTop:[['model-angle-01.png','正面偏右约30°、轻微俯拍'],['model-angle-02.png','正面偏左约30°、轻微俯拍'],['model-angle-03.png','正面近正视、轻微俯拍']],
+  highTop:[['model-angle-04.png','顶部高位俯拍、正面与底部可见'],['model-angle-09.png','横放高位俯拍、正面左侧与底部可见'],['model-angle-10.png','横放近垂直俯拍、正面为主'],['model-angle-11.png','横放高位俯拍、正面左侧与底部条码面可见'],['model-angle-12.png','横放垂直俯拍、完整正面可见']],
+  low:[['model-angle-06.png','直立正面、接近平视'],['model-angle-07.png','直立正面偏右约45°、右侧面可见'],['model-angle-08.png','横放低角度、左侧面与底部条码面可见']],
+  oblique:[['model-angle-01.png','正面偏右约30°、轻微俯拍'],['model-angle-02.png','正面偏左约30°、轻微俯拍'],['model-angle-07.png','直立正面偏右约45°、右侧面可见']]
+};
+function chooseProductAngle(x,variantIndex){
+  const plan=variantPlans[variantIndex%variantPlans.length]||'',v=variantSpec(x,variantIndex);
+  let group='slightTop',reason='常规居家桌面采用轻微俯拍安全视角';
+  if(/高位俯拍/.test(plan)){group='highTop';reason='方案要求高位俯拍'}
+  else if(/低机位/.test(plan)){group='low';reason='方案要求低机位近景'}
+  else if(/平视/.test(plan)){group='eye';reason='方案要求平视机位'}
+  else if(/侧面|斜角/.test(plan)){group='oblique';reason='方案要求侧面或斜角构图'}
+  else if(/轻微俯拍/.test(plan)){group='slightTop';reason='方案要求轻微俯拍'}
+  if(x.format==='细节展示'&&group==='eye'){group='slightTop';reason='细节展示优先使用可看清包装正面的轻俯拍'}
+  const candidates=productAngleCatalog[group],seed=textHash(x.id+'|'+v.position+'|'+variantIndex),selected=candidates[seed%candidates.length];
+  return {file:selected[0],label:selected[1],reason};
+}
+const promptBeforeSmartAngleMatch=makeImagePrompt;
+makeImagePrompt=function(x,variantIndex){
+  let text=promptBeforeSmartAngleMatch(x,variantIndex),angle=chooseProductAngle(x,variantIndex);
+  const smart='根据本方案机位自动匹配结果（'+angle.reason+'），包装盒唯一主产品角度图为“'+angle.file+'（'+angle.label+'）”。必须直接保持该实拍图中的真实盒型、宽高厚比例、透视及可见包装面；其他六视图只用于核对包装内容，场景参考图只用于环境，不得据此重新推算、重建、拉宽、压扁或改变药盒。若场景构图与该产品角度冲突，调整场景机位适配产品图，绝不虚构新的产品角度。';
+  text=text.replace(/本方案包装盒必须以白底实拍角度图“[^”]+”作为唯一主产品角度依据，直接保持该图中的真实盒型、宽高厚比例、透视和可见包装面；其他六视图只用于核对包装内容，场景参考图只用于环境，不得据此重新推算、重建、拉宽、压扁或改变药盒。若场景机位与该产品角度冲突，调整场景机位适配产品图，绝不虚构新的产品角度。/,smart);
+  return text;
+};
+document.head.insertAdjacentHTML('beforeend','<style>.library-control-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:42px;align-items:start}.prop-library-panel{padding-left:30px;border-left:1px solid var(--line)}.prop-library-panel h3{margin:4px 0 13px;font-size:14px;color:var(--muted)}.prop-library-buttons{display:flex;gap:9px;flex-wrap:wrap}.prop-library-view{display:none}.prop-library-view.open{display:block}.prop-library-head{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:20px}.prop-library-head h2{min-height:0;margin:0;font-size:24px}.prop-library-empty{padding:54px 24px;border:1px dashed var(--line);border-radius:18px;text-align:center;color:var(--muted);background:rgba(255,255,255,.35)}@media(max-width:980px){.library-control-layout{grid-template-columns:1fr;gap:18px}.prop-library-panel{padding:16px 0 0;border-left:0;border-top:1px solid var(--line)}}</style>');
+const filtersEl=document.querySelector('#filters');
+const libraryControlLayout=document.createElement('div');libraryControlLayout.className='library-control-layout';
+filtersEl.parentNode.insertBefore(libraryControlLayout,filtersEl);libraryControlLayout.append(filtersEl);
+const propLibraryPanel=document.createElement('aside');propLibraryPanel.className='prop-library-panel';propLibraryPanel.innerHTML='<h3>道具库</h3><div class="prop-library-buttons">'+['梳妆台','书桌','餐桌','床头柜'].map(v=>'<button type="button" data-prop-category="'+v+'">'+v+'</button>').join('')+'</div>';libraryControlLayout.append(propLibraryPanel);
+const propLibraryView=document.createElement('section');propLibraryView.className='prop-library-view';propLibraryView.innerHTML='<div class="prop-library-head"><h2>道具库 · <span id="propLibraryTitle">梳妆台</span></h2><button type="button" id="backToMaterials">返回素材库</button></div><div class="prop-library-empty">当前分类尚未加入道具图片，后续可继续补充。</div>';libraryMain.append(propLibraryView);
+function showMaterialsLibrary(){propLibraryView.classList.remove('open');document.querySelector('#materialsView').style.display='';propLibraryPanel.querySelectorAll('button').forEach(x=>x.classList.remove('active'))}
+function showPropLibrary(category){document.querySelector('#materialsView').style.display='none';propLibraryView.classList.add('open');document.querySelector('#propLibraryTitle').textContent=category;propLibraryPanel.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x.dataset.propCategory===category))}
+propLibraryPanel.querySelectorAll('button').forEach(button=>button.onclick=()=>showPropLibrary(button.dataset.propCategory));
+document.querySelector('#backToMaterials').onclick=showMaterialsLibrary;
+document.querySelectorAll('#filters .axis button').forEach(button=>button.addEventListener('click',showMaterialsLibrary));
+const allPropsButton=document.createElement('button');allPropsButton.type='button';allPropsButton.dataset.propCategory='全部';allPropsButton.textContent='全部';propLibraryPanel.querySelector('.prop-library-buttons').prepend(allPropsButton);allPropsButton.onclick=()=>showPropLibrary('全部');
+const tabletModelImage=[...document.querySelectorAll('#timeProductGallery .product-image')].find(card=>/单颗药粒六视图/.test(card.textContent));if(tabletModelImage){const img=tabletModelImage.querySelector('img');img.src='public/products/%E6%97%B6%E5%85%89%E7%89%87/03_%E5%8D%95%E9%A2%97%E8%8D%AF%E7%89%87%E5%85%AD%E8%A7%86%E5%9B%BE.png';img.alt='时光片单颗药片六视图';tabletModelImage.querySelector('span').textContent='单颗药片六视图'}
+productComboSelect.innerHTML='<option>包装盒＋药板</option><option>包装盒</option><option>药板</option><option>药片</option>';
+const promptBeforeStrictProductCombo=makeImagePrompt;
+function strictProductComboPrompt(text,combo){
+  text=text.replace(/药粒/g,'药片');
+  const forbidden=combo==='包装盒＋药板'?['药片']:combo==='包装盒'?['药板','药片']:combo==='药板'?['包装盒','外包装','药片']:['包装盒','外包装','药板'];
+  text=text.split('。').filter(part=>part&&!forbidden.some(word=>part.includes(word))).join('。');
+  const rules={
+    '包装盒＋药板':'画面仅出现一个外包装盒与一板完整药板，两者均完整可见；不得增加任何其他产品形态。所选产品必须放在真实硬质台面上，不可放在床品上。',
+    '包装盒':'画面只能出现一个外包装盒，不得增加、暗示或描述任何其他产品形态。包装盒必须完整还原上传的白底实拍角度图，并放在真实硬质台面上，不可放在床品上。',
+    '药板':'画面只能出现一板完整药板，泡罩结构必须完整，不得增加、暗示或描述任何其他产品形态。药板必须平稳完整地放在真实硬质台面上，四角均有支撑，不可放在床品上。',
+    '药片':'画面只能出现药片，不得增加、暗示或描述任何其他产品形态。药片的颜色、形状、厚度与校色母版一致，并自然、稳定地放在真实硬质台面或合适容器中，不可放在床品上。'
+  };
+  return (text.replace(/。{2,}/g,'。').replace(/[，,]{2,}/g,'，')+'。'+rules[combo]).replace(/^。|。{2,}/g,'。');
+}
+makeImagePrompt=function(x,variantIndex){const combo=productComboSelect.value;return strictProductComboPrompt(promptBeforeStrictProductCombo(x,variantIndex),combo)};
+document.head.insertAdjacentHTML('beforeend','<style>.prompt-result{grid-template-columns:300px minmax(0,1fr)}.prompt-reference-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-self:start}.prompt-reference-pair figure{margin:0}.prompt-reference-pair img{width:100%;height:auto;aspect-ratio:4/5;object-fit:contain;background:#f8f6f2;border-radius:10px}.prompt-reference-pair figcaption{padding-top:7px;color:var(--muted);font-size:11px;font-weight:700;text-align:center}@media(max-width:900px){.prompt-result{grid-template-columns:1fr}.prompt-reference-pair{max-width:430px}}</style>');
+function productReferenceFor(x,variantIndex,combo){
+  const root='public/products/%E6%97%B6%E5%85%89%E7%89%87/';
+  if(combo==='包装盒＋药板')return {image:root+'ref-%E5%8C%85%E8%A3%85%E7%9B%92%E4%B8%8E%E8%8D%AF%E6%9D%BF.png',label:'包装盒＋药板组合'};
+  if(combo==='药板')return {image:root+'ref-%E8%8D%AF%E6%9D%BF.png',label:'完整药板'};
+  if(combo==='药片')return {image:root+'ref-%E8%8D%AF%E7%89%87.png',label:'单颗药片'};
+  const angle=chooseProductAngle(x,variantIndex);return {image:root+angle.file,label:angle.label};
+}
+function conciseImagePrompt(x,variantIndex){
+  const combo=productComboSelect.value,v=variantSpec(x,variantIndex),ratio=document.querySelector('#promptRatio').value,plan=variantPlans[variantIndex%variantPlans.length];
+  let camera=(styleMap[x.style]&&styleMap[x.style][x.scene])||'iPhone后置镜头，自然日光，中性真实色调';
+  camera=camera.replace(/暖白3500K主色|暖白3200K|中性白4000K/g,'中性日光白平衡5000K').replace(/低饱和暖棕色调|暖棕色调/g,'中性真实色调').replace(/低饱和暖灰色调/g,'低饱和中性灰色调');
+  const subject={
+    '包装盒＋药板':'一个包装盒与一板完整药板分别平稳放在同一硬质台面，二者不重叠、不贴靠，保留自然间距和独立接触阴影',
+    '包装盒':'一个外包装盒完整清晰地放在硬质台面',
+    '药板':'一板完整药板平放在硬质台面，四角均有支撑和连续接触阴影',
+    '药片':'药片自然、稳定地放在硬质台面或合适容器中'
+  }[combo];
+  const preserve=combo.includes('包装盒')?'产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响；保持真实盒型比例、可见包装面、品牌与文字':'产品在画面中的角度极致还原上传的产品图，不虚构产品图中未体现的角度；保持颜色、形状、比例和结构';
+  return '色调为iPhone 17 Pro Max原相机后置镜头风格，禁止出现复古唯美报纸黄的色调。'+camera+'。真实居家室内，'+v.furniture+'，自然放置'+v.props.join('、')+'。'+plan+'。画面产品仅为'+combo+'：'+subject+'。'+preserve+'；产品清晰，尺度、透视、遮挡和阴影符合现实。中性白平衡，白色不发黄，紫色准确；不增加其他产品、无关Logo或错误文字。'+(x.format==='手持'?'只出现自然的手或手臂。':'不出现人物。')+'图片比例'+ratio+'。';
+}
+makeImagePrompt=conciseImagePrompt;
+document.querySelector('#buildPrompts').onclick=()=>{
+  if(!promptSelected.size){alert('请先选择至少一张参考素材');return}
+  const count=Math.max(1,Math.min(8,Number(document.querySelector('#promptCount').value)||1)),combo=productComboSelect.value,tasks=[];
+  [...promptSelected].forEach(id=>{const x=items.find(v=>v.id===id);for(let i=0;i<count;i++)tasks.push({x,i,v:variantSpec(x,i),product:productReferenceFor(x,i,combo)})});
+  promptResultsEl.innerHTML=tasks.map(({x,i,v,product})=>{const key=x.id+'-'+combo+'-'+i,auto=makeImagePrompt(x,i),value=savedPromptTexts[key]||auto;return '<article class="prompt-result" data-prompt-key="'+key+'" data-auto-prompt="'+esc(auto)+'"><div class="prompt-reference-pair"><figure><img src="'+encodeURI(x.image)+'" alt="场景参考"><figcaption>场景参考 · '+esc(x.id)+'</figcaption></figure><figure><img src="'+product.image+'" alt="产品参考"><figcaption>产品参考 · '+esc(product.label)+'</figcaption></figure></div><div><div class="prompt-meta">'+x.id+' · 差异方案 '+(i+1)+' / '+count+'</div><div class="variant-summary">'+esc(v.furniture)+' · '+esc(v.props.join(' / '))+' · '+esc(v.position)+'</div><div class="prompt-check">✓ 一条提示词仅对应一张产品参考图</div><textarea>'+esc(value)+'</textarea><div class="prompt-card-actions"><button type="button" data-copy>复制此条</button><button type="button" data-restore>恢复自动版本</button></div></div></article>'}).join('');bindPromptEditorActions()
+};
+const importedBackgroundGroups={'梳妆台':['VANITY',4],'书桌':['DESK',2],'餐桌':['DINING',14],'床头柜':['BEDSIDE',2]};
+Object.entries(importedBackgroundGroups).forEach(([category,[code,count]])=>{for(let i=1;i<=count;i++){const n=String(i).padStart(2,'0');items.push({id:'PROPBG-'+code+'-'+n,title:category+'背景 '+i,style:'精致随手PO',shot:'静置',content:'背景',scene:'背景',format:'静置',deleted:false,image:'public/by-id/PROPBG-'+code+'-'+n+'.jpg'})}});
+const importedPropGroups={
+  '梳妆台':['chanel香水','chanel彩妆','cpb','ysl彩妆','饰品1','饰品2','海蓝之谜','梳子','化妆包1','化妆包2','祖玛珑','赫莲娜','莱伯妮'],
+  '书桌':['书桌道具1','书桌道具2','书桌道具3','书桌道具4','书桌道具5','书桌道具6','书桌道具7','书桌道具8'],
+  '餐桌':['水杯','水壶','盘子'],
+  '床头柜':['香薰1','饰品1','饰品2','台灯1','台灯2','发圈1','发圈2','化妆包1','化妆包2','身体乳1','身体乳2']
+};
+const propCodeMap={'梳妆台':'VANITY','书桌':'DESK','餐桌':'DINING','床头柜':'BEDSIDE'},importedPropItems=[];
+Object.entries(importedPropGroups).forEach(([category,labels])=>labels.forEach((label,index)=>{const n=String(index+1).padStart(2,'0');importedPropItems.push({id:'PROP-'+propCodeMap[category]+'-'+n,category,label,image:'public/props/'+category+'/prop-'+n+'.png'})}));
+const selectedPropIds=new Set();
+document.head.insertAdjacentHTML('beforeend','<style>.prop-selection-note{color:var(--muted);font-size:13px;margin:0 0 16px}.prop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}.prop-card{position:relative;border:2px solid transparent;border-radius:16px;overflow:hidden;background:#fff;cursor:pointer;box-shadow:0 8px 30px rgba(70,55,40,.05)}.prop-card.selected{border-color:var(--accent)}.prop-card img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff}.prop-card span{display:block;padding:11px 13px;font-size:13px;font-weight:700}.prop-card i{display:none;position:absolute;right:9px;top:9px;width:25px;height:25px;border-radius:50%;place-items:center;background:var(--accent);color:#fff;font-style:normal}.prop-card.selected i{display:grid}</style>');
+propLibraryView.querySelector('.prop-library-empty').outerHTML='<div class="prop-selection-note">已选择 <b id="selectedPropCount">0</b> 个道具 · 点击图片即可加入提示词，再次点击取消</div><div class="prop-grid" id="propGrid"></div>';
+function renderPropLibrary(category){const list=category==='全部'?importedPropItems:importedPropItems.filter(x=>x.category===category);document.querySelector('#propGrid').innerHTML=list.map(x=>'<article class="prop-card '+(selectedPropIds.has(x.id)?'selected':'')+'" data-prop-id="'+x.id+'"><img src="'+encodeURI(x.image)+'" alt="'+esc(x.label)+'" loading="lazy"><i>✓</i><span>'+esc(x.label)+'</span></article>').join('');document.querySelectorAll('.prop-card').forEach(card=>card.onclick=()=>{selectedPropIds.has(card.dataset.propId)?selectedPropIds.delete(card.dataset.propId):selectedPropIds.add(card.dataset.propId);renderPropLibrary(category)});document.querySelector('#selectedPropCount').textContent=selectedPropIds.size}
+const showPropLibraryBase=showPropLibrary;showPropLibrary=function(category){showPropLibraryBase(category);renderPropLibrary(category)};
+const promptBeforeImportedProps=makeImagePrompt;makeImagePrompt=function(x,variantIndex){let text=promptBeforeImportedProps(x,variantIndex);const selected=importedPropItems.filter(p=>selectedPropIds.has(p.id));if(selected.length){const rule='画面中直接使用所选白底道具参考图中的'+selected.map(p=>p.label).join('、')+'，保持其外观、颜色、材质和设计，不对道具本身进行改造。';text=text.replace(/图片比例/,rule+'图片比例')}return text};
+render();renderPromptPicker();document.querySelector('header .sub').textContent='共 '+items.filter(x=>!x.deleted).length+' 张审核保留素材 · 标题已按实际画面重写 · 本地检查版';
+document.head.insertAdjacentHTML('beforeend','<style>.prompt-prop-section{margin:24px 0;padding-top:20px;border-top:1px solid var(--line)}.prompt-prop-section h3{margin:0 0 5px}.prompt-prop-section>p{margin:0 0 13px!important;font-size:13px}.prompt-prop-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:11px;max-height:350px;overflow:auto;padding:4px}.prompt-prop-card{position:relative;border:2px solid transparent;border-radius:12px;overflow:hidden;background:#fff;cursor:pointer}.prompt-prop-card.selected{border-color:var(--accent)}.prompt-prop-card img{display:block;width:100%;aspect-ratio:1/1;object-fit:contain}.prompt-prop-card span{display:block;padding:7px 8px;font-size:11px;font-weight:700}.prompt-prop-card i{position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;display:none;place-items:center;background:var(--accent);color:#fff;font-style:normal}.prompt-prop-card.selected i{display:grid}.prompt-prop-filters .axis b{width:72px}.prompt-reference-pair.has-props{grid-template-columns:repeat(2,minmax(0,1fr))}</style>');
+const promptPropSection=document.createElement('section');promptPropSection.className='prompt-prop-section';promptPropSection.innerHTML='<h3>选择道具 <span id="selectedPromptPropCount">0</span></h3><p>道具为可选项，本批提示词共同使用；点击图片选择，再次点击取消。</p><div class="prompt-prop-filters"><div class="axis"><b>道具分类</b>'+['全部','梳妆台','书桌','餐桌','床头柜'].map((v,i)=>'<button type="button" class="'+(i?'':'active')+'" data-prompt-prop-category="'+v+'">'+v+'</button>').join('')+'</div></div><div class="prompt-prop-picker" id="promptPropPicker"></div>';promptFilters.insertAdjacentElement('afterend',promptPropSection);
+let promptPropCategory='全部';
+function renderPromptPropPicker(){const list=promptPropCategory==='全部'?importedPropItems:importedPropItems.filter(x=>x.category===promptPropCategory);document.querySelector('#promptPropPicker').innerHTML=list.map(x=>'<article class="prompt-prop-card '+(selectedPropIds.has(x.id)?'selected':'')+'" data-prompt-prop-id="'+x.id+'"><img src="'+encodeURI(x.image)+'" alt="'+esc(x.label)+'" loading="lazy"><i>✓</i><span>'+esc(x.label)+'</span></article>').join('');document.querySelectorAll('.prompt-prop-card').forEach(card=>card.onclick=()=>{selectedPropIds.has(card.dataset.promptPropId)?selectedPropIds.delete(card.dataset.promptPropId):selectedPropIds.add(card.dataset.promptPropId);renderPromptPropPicker()});document.querySelector('#selectedPromptPropCount').textContent=selectedPropIds.size}
+promptPropSection.querySelectorAll('[data-prompt-prop-category]').forEach(button=>button.onclick=()=>{promptPropSection.querySelectorAll('[data-prompt-prop-category]').forEach(x=>x.classList.remove('active'));button.classList.add('active');promptPropCategory=button.dataset.promptPropCategory;renderPromptPropPicker()});renderPromptPropPicker();
+renderPropLibrary=function(category){const list=category==='全部'?importedPropItems:importedPropItems.filter(x=>x.category===category);document.querySelector('#propGrid').innerHTML=list.map(x=>'<article class="prop-card"><img src="'+encodeURI(x.image)+'" alt="'+esc(x.label)+'" loading="lazy"><span>'+esc(x.label)+'</span></article>').join('');const note=propLibraryView.querySelector('.prop-selection-note');if(note)note.innerHTML='道具浏览 · 请前往“提示词”页面选择用于生图的道具'};
+const buildPromptsBeforePropPreview=document.querySelector('#buildPrompts').onclick;document.querySelector('#buildPrompts').onclick=()=>{buildPromptsBeforePropPreview();const chosen=importedPropItems.filter(x=>selectedPropIds.has(x.id));if(!chosen.length)return;document.querySelectorAll('.prompt-result .prompt-reference-pair').forEach(pair=>{pair.classList.add('has-props');chosen.forEach(prop=>pair.insertAdjacentHTML('beforeend','<figure><img src="'+encodeURI(prop.image)+'" alt="道具参考"><figcaption>道具参考 · '+esc(prop.label)+'</figcaption></figure>'))})};
+document.head.insertAdjacentHTML('beforeend','<style>.prompt-library-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:42px;align-items:start;margin-top:24px}.prompt-library-layout #promptFilters{min-width:0}.prompt-prop-side{padding-left:30px;border-left:1px solid var(--line)}.prompt-prop-side h3{margin:4px 0 13px;font-size:14px;color:var(--muted)}.prompt-prop-side .axis{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:0}.prompt-prop-side .axis b{display:none}.prompt-picker,.prompt-prop-picker{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:20px;max-height:none;overflow:visible;padding:0}.pick-card,.prompt-prop-card{border-radius:18px;box-shadow:0 8px 30px rgba(70,55,40,.05)}.pick-card img,.prompt-prop-card img{aspect-ratio:4/5}.pick-card span,.prompt-prop-card span{padding:12px 14px;font-size:13px}.prompt-head{margin-top:28px}.prompt-edit-panel{margin-top:34px}@media(max-width:980px){.prompt-library-layout{grid-template-columns:1fr;gap:18px}.prompt-prop-side{padding:16px 0 0;border-left:0;border-top:1px solid var(--line)}}@media(max-width:640px){.prompt-picker,.prompt-prop-picker{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}</style>');
+const promptPropPicker=document.querySelector('#promptPropPicker'),promptPropFilters=document.querySelector('.prompt-prop-filters');promptPropSection.remove();
+const promptLibraryLayout=document.createElement('div');promptLibraryLayout.className='prompt-library-layout';promptFilters.parentNode.insertBefore(promptLibraryLayout,promptFilters);promptLibraryLayout.append(promptFilters);
+const promptPropSide=document.createElement('aside');promptPropSide.className='prompt-prop-side';promptPropSide.innerHTML='<h3>道具库 · 已选 <span id="selectedPromptPropCount">'+selectedPropIds.size+'</span></h3>';promptPropSide.append(promptPropFilters);promptLibraryLayout.append(promptPropSide);
+promptPicker.insertAdjacentElement('afterend',promptPropPicker);promptPropPicker.style.display='none';
+let promptLibraryMode='scene';const promptHeadTitle=document.querySelector('.prompt-head h3');
+function switchPromptLibrary(mode){promptLibraryMode=mode;const propMode=mode==='props';promptPicker.style.display=propMode?'none':'grid';promptPropPicker.style.display=propMode?'grid':'none';promptHeadTitle.innerHTML=propMode?'选择道具 <span>'+selectedPropIds.size+'</span>':'选择参考素材 <span id="selectedPromptCount">'+promptSelected.size+'</span>';if(propMode)renderPromptPropPicker()}
+promptPropFilters.querySelectorAll('[data-prompt-prop-category]').forEach(button=>button.addEventListener('click',()=>switchPromptLibrary('props')));
+promptFilters.querySelectorAll('[data-prompt-axis] button').forEach(button=>button.addEventListener('click',()=>switchPromptLibrary('scene')));
+switchPromptLibrary('scene');
 </script></body></html>
 
 
