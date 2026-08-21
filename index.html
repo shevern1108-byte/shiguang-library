@@ -155,25 +155,36 @@ function productReferenceFor(x,variantIndex,combo){
   if(combo==='药片')return {image:root+'ref-%E8%8D%AF%E7%89%87.png',label:'单颗药片'};
   const angle=chooseProductAngle(x,variantIndex);return {image:root+angle.file,label:angle.label};
 }
+function productReferencesFor(x,variantIndex,combo){if(combo==='包装盒＋药板'){const root='public/products/%E6%97%B6%E5%85%89%E7%89%87/',angle=chooseProductAngle(x,variantIndex);return [{image:root+angle.file,label:'包装盒 · '+angle.label},{image:root+'ref-%E8%8D%AF%E6%9D%BF.png',label:'完整药板'}]}return [productReferenceFor(x,variantIndex,combo)]}
 function conciseImagePrompt(x,variantIndex){
   const combo=productComboSelect.value,v=variantSpec(x,variantIndex),ratio=document.querySelector('#promptRatio').value,plan=variantPlans[variantIndex%variantPlans.length];
   let camera=(styleMap[x.style]&&styleMap[x.style][x.scene])||'iPhone后置镜头，自然日光，中性真实色调';
   camera=camera.replace(/暖白3500K主色|暖白3200K|中性白4000K/g,'中性日光白平衡5000K').replace(/低饱和暖棕色调|暖棕色调/g,'中性真实色调').replace(/低饱和暖灰色调/g,'低饱和中性灰色调');
-  const subject={
+  const staticSubject={
     '包装盒＋药板':'一个包装盒与一板完整药板分别平稳放在同一硬质台面，二者不重叠、不贴靠，保留自然间距和独立接触阴影',
     '包装盒':'一个外包装盒完整清晰地放在硬质台面',
     '药板':'一板完整药板平放在硬质台面，四角均有支撑和连续接触阴影',
     '药片':'药片自然、稳定地放在硬质台面或合适容器中'
   }[combo];
-  const preserve=combo.includes('包装盒')?'产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响；保持真实盒型比例、可见包装面、品牌与文字':'产品在画面中的角度极致还原上传的产品图，不虚构产品图中未体现的角度；保持颜色、形状、比例和结构';
-  return '色调为iPhone 17 Pro Max原相机后置镜头风格，禁止出现复古唯美报纸黄的色调。'+camera+'。真实居家室内，'+v.furniture+'，自然放置'+v.props.join('、')+'。'+plan+'。画面产品仅为'+combo+'：'+subject+'。'+preserve+'；产品清晰，尺度、透视、遮挡和阴影符合现实。中性白平衡，白色不发黄，紫色准确；不增加其他产品、无关Logo或错误文字。'+(x.format==='手持'?'只出现自然的手或手臂。':'不出现人物。')+'图片比例'+ratio+'。';
+  const referenceHasHand=x.format==='手持'||(x.format==='细节展示'&&(x.shot==='手持'||/掌心|手掌|指尖|手持/.test(x.title||'')));
+  const palmDetail=x.format==='细节展示'&&referenceHasHand;
+  const handSubject={
+    '包装盒＋药板':'手部自然持握包装盒或完整药板，另一件产品获得真实支撑，二者不重叠且主体清楚',
+    '包装盒':'手部以放松、符合现实的姿势完整持握外包装盒，不遮挡主要包装信息',
+    '药板':'手部自然承托或持握完整药板，不弯折药板，不遮挡主体',
+    '药片':palmDetail?'药片自然平放在掌心中展示细节，掌心形成真实支撑，不悬浮':'以掌心承托或指尖自然持握药片，姿势符合现实，不悬浮'
+  }[combo];
+  const subject=referenceHasHand?handSubject:staticSubject;
+  const preserve=combo.includes('包装盒')?'产品在画面中的角度在极致还原上传的产品图，不虚构未在产品图中体现的产品任何一面外包装，不被参考图的拍摄角度影响；保持真实盒型比例、可见包装面、品牌与文字':referenceHasHand?'保持上传产品图中的颜色、形状、比例和结构':'产品在画面中的角度极致还原上传的产品图，不虚构产品图中未体现的角度；保持颜色、形状、比例和结构';
+  const handRule=referenceHasHand?(palmDetail?'画面出现自然掌心或手臂并参考原图的手部展示方式，手部不遮挡产品主体，不出现完整人物。':'画面出现自然的手或手臂，以放松且符合现实的姿势持握产品，不出现完整人物。'):'静置构图，画面不出现手、手臂或人物。';
+  return '色调为iPhone 17 Pro Max原相机后置镜头风格，禁止出现复古唯美报纸黄的色调。'+camera+'。真实居家室内，'+v.furniture+'，自然放置'+v.props.join('、')+'。'+plan+'。画面产品仅为'+combo+'：'+subject+'。'+preserve+'；产品清晰，尺度、透视、遮挡和阴影符合现实。中性白平衡，白色不发黄，紫色准确；不增加其他产品、无关Logo或错误文字。'+handRule+'图片比例'+ratio+'。';
 }
 makeImagePrompt=conciseImagePrompt;
 document.querySelector('#buildPrompts').onclick=()=>{
   if(!promptSelected.size){alert('请先选择至少一张参考素材');return}
   const count=Math.max(1,Math.min(8,Number(document.querySelector('#promptCount').value)||1)),combo=productComboSelect.value,tasks=[];
-  [...promptSelected].forEach(id=>{const x=items.find(v=>v.id===id);for(let i=0;i<count;i++)tasks.push({x,i,v:variantSpec(x,i),product:productReferenceFor(x,i,combo)})});
-  promptResultsEl.innerHTML=tasks.map(({x,i,v,product})=>{const key=x.id+'-'+combo+'-'+i,auto=makeImagePrompt(x,i),value=savedPromptTexts[key]||auto;return '<article class="prompt-result" data-prompt-key="'+key+'" data-auto-prompt="'+esc(auto)+'"><div class="prompt-reference-pair"><figure><img src="'+encodeURI(x.image)+'" alt="场景参考"><figcaption>场景参考 · '+esc(x.id)+'</figcaption></figure><figure><img src="'+product.image+'" alt="产品参考"><figcaption>产品参考 · '+esc(product.label)+'</figcaption></figure></div><div><div class="prompt-meta">'+x.id+' · 差异方案 '+(i+1)+' / '+count+'</div><div class="variant-summary">'+esc(v.furniture)+' · '+esc(v.props.join(' / '))+' · '+esc(v.position)+'</div><div class="prompt-check">✓ 一条提示词仅对应一张产品参考图</div><textarea>'+esc(value)+'</textarea><div class="prompt-card-actions"><button type="button" data-copy>复制此条</button><button type="button" data-restore>恢复自动版本</button></div></div></article>'}).join('');bindPromptEditorActions()
+  [...promptSelected].forEach(id=>{const x=items.find(v=>v.id===id);for(let i=0;i<count;i++)tasks.push({x,i,v:variantSpec(x,i),products:productReferencesFor(x,i,combo)})});
+  promptResultsEl.innerHTML=tasks.map(({x,i,v,products})=>{const key=x.id+'-'+combo+'-'+i,auto=makeImagePrompt(x,i),value=savedPromptTexts[key]||auto,productFigures=products.map(product=>'<figure><img src="'+product.image+'" alt="产品参考"><figcaption>产品参考 · '+esc(product.label)+'</figcaption></figure>').join('');return '<article class="prompt-result" data-prompt-key="'+key+'" data-auto-prompt="'+esc(auto)+'"><div class="prompt-reference-pair"><figure><img src="'+encodeURI(x.image)+'" alt="场景参考"><figcaption>场景参考 · '+esc(x.id)+'</figcaption></figure>'+productFigures+'</div><div><div class="prompt-meta">'+x.id+' · 差异方案 '+(i+1)+' / '+count+'</div><div class="variant-summary">'+esc(v.furniture)+' · '+esc(v.props.join(' / '))+' · '+esc(v.position)+'</div><div class="prompt-check">✓ '+(products.length===2?'包装盒＋药板分别使用两张产品参考图':'本方案只使用一张产品参考图')+'</div><textarea>'+esc(value)+'</textarea><div class="prompt-card-actions"><button type="button" data-copy>复制此条</button><button type="button" data-restore>恢复自动版本</button></div></div></article>'}).join('');bindPromptEditorActions()
 };
 const importedBackgroundGroups={'梳妆台':['VANITY',4],'书桌':['DESK',2],'餐桌':['DINING',14],'床头柜':['BEDSIDE',2]};
 Object.entries(importedBackgroundGroups).forEach(([category,[code,count]])=>{for(let i=1;i<=count;i++){const n=String(i).padStart(2,'0');items.push({id:'PROPBG-'+code+'-'+n,title:category+'背景 '+i,style:'精致随手PO',shot:'静置',content:'背景',scene:'背景',format:'静置',deleted:false,image:'public/by-id/PROPBG-'+code+'-'+n+'.jpg'})}});
